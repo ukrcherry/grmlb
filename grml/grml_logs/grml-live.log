@@ -1,0 +1,24 @@
+------------------------------------------------------------------------------
+Starting grml-live [0.56.0] run on Wed May  6 13:15:59 EEST 2026
+Using local config file: /var/cache/iso-build/grml-live-debian-base.conf
+Executed grml-live command line:
+/usr/sbin/grml-live -F -s trixie -a amd64 -c GRMLBASE,DEBIAN_BASE -g debian-base -v 1.0 -C /var/cache/iso-build/grml-live-debian-base.conf
+Executed FAI command line:
+/usr/sbin/..//lib/grml-live/minifai /var/cache/iso-build/grml-live-config-debian_base DEBIAN_TRIXIE,GRMLBASE,DEBIAN_BASE,RELEASE,AMD64 dirinstall /home/alex/git/jamk/grmlb/build-iso/grml//grml_chroot /tmp/tmp.ecW1j3DtXO trixie http://deb.debian.org/debian
+Traceback (most recent call last):
+  File "/usr/sbin/../lib/grml-live/grml_live/minifai.py", line 835, in _main
+    install_base(conf_dir, chroot_dir, classes, args.debian_suite, args.mirror_url)
+  File "/usr/sbin/../lib/grml-live/grml_live/minifai.py", line 643, in install_base
+    keyring_tempfile.write(keyring_file.read_bytes())
+                           ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read_bytes'
+I: /usr/sbin/..//lib/grml-live/minifai started with argv=['/usr/sbin/..//lib/grml-live/minifai', '/var/cache/iso-build/grml-live-config-debian_base', 'DEBIAN_TRIXIE,GRMLBASE,DEBIAN_BASE,RELEASE,AMD64', 'dirinstall', '/home/alex/git/jamk/grmlb/build-iso/grml//grml_chroot', '/tmp/tmp.ecW1j3DtXO', 'trixie', 'http://deb.debian.org/debian']
+I: /usr/sbin/..//lib/grml-live/minifai parsed args: Namespace(config=PosixPath('/var/cache/iso-build/grml-live-config-debian_base'), classes='DEBIAN_TRIXIE,GRMLBASE,DEBIAN_BASE,RELEASE,AMD64', action='dirinstall', chroot_dir=PosixPath('/home/alex/git/jamk/grmlb/build-iso/grml/grml_chroot'), grml_live_config=PosixPath('/tmp/tmp.ecW1j3DtXO'), debian_suite='trixie', mirror_url='http://deb.debian.org/debian')
+I: Using classes: ['DEBIAN_TRIXIE', 'GRMLBASE', 'DEBIAN_BASE', 'RELEASE', 'AMD64']
+I: Using conf_dir: /var/cache/iso-build/grml-live-config-debian_base
+I: Using chroot_dir: /home/alex/git/jamk/grmlb/build-iso/grml/grml_chroot
+I: Installing Debian base system for suite "trixie" using mmdebstrap
+E: 2026-05-06T13:15:59.831181 minifai main caught fatal exception
+I: minifai exiting with exit code 2
+Error: critical error while executing fai [exit code 2]. Exiting.
+------------------------------------------------------------------------------
