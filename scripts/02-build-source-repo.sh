@@ -44,7 +44,14 @@ require_root
 print_banner
 
 PKG_LIST="${1:-}"
-[[ -n "$PKG_LIST" && -f "$PKG_LIST" ]] || die "Usage: $0 <package-list-file>"
+if [[ -z "$PKG_LIST" ]]; then
+    die "Usage: $0 <package-list-file>
+Examples:
+  sudo $0 packages-tasksel/debian-base.list
+  sudo OPT_LEVELS_STR=2 $0 packages-tasksel/debian-gnome.list"
+fi
+[[ -f "$PKG_LIST" ]] || die "Package list file not found: $PKG_LIST
+Run scripts/01-extract-tasksel-lists.sh first."
 log_step "02-build-source-repo.sh  list=$(basename "$PKG_LIST")  levels=(${OPT_LEVELS[*]})"
 
 PARALLEL_PKGS="${PARALLEL_PKGS:-1}"

@@ -117,33 +117,62 @@ log_ok "Base build dependencies installed."
 # grml-live and grml-debootstrap are in Debian trixie's main archive.
 # On Ubuntu hosts (where this script is most likely being run) they may not
 # be present in the default repos, so we add grml's own repository.
-GRML_APT_LIST="/etc/apt/sources.list.d/grml.sources"
-GRML_KEYRING="/usr/share/keyrings/grml-archive-keyring.gpg"
+# ---------------------------------------------------------------------------
+# grml apt repository setup
+# ---------------------------------------------------------------------------
+# The grml keyring has moved from .gpg (legacy binary) to .pgp (armored) format
+# and the signing key changed in 2025 (now requires EE1291F5F9382900).
+# Modern apt uses sqv (Sequoia) for verification which is strict about this.
+#
+# Correct approach: install grml-keyring from Debian's own archive (it is in
+# trixie/main since 2025.07.02) -- this gives us the right .pgp file and the
+# correct sources stanza without having to manage the key ourselves.
+#
+# Fallback: if grml-keyring is not yet in the local apt cache, fetch the .pgp
+# file directly from deb.grml.org/repo-key.gpg (despite the .gpg extension
+# this is the armored/pgp format since the 2025 rotation).
 
-if [[ ! -f "$GRML_KEYRING" ]]; then
-    log_info "Fetching grml archive keyring..."
-    curl -fsSL https://deb.grml.org/repo.key \
-        | gpg --dearmor -o "$GRML_KEYRING"
+GRML_KEYRING_PKG="grml-keyring"
+GRML_KEYRING_PGP="/usr/share/keyrings/grml-archive-keyring.pgp"
+GRML_APT_LIST="/etc/apt/sources.list.d/grml.sources"
+
+if [[ ! -f "$GRML_KEYRING_PGP" ]]; then
+    log_info "Installing grml-keyring from Debian archive..."
+    apt-get install -y --no-install-recommends "$GRML_KEYRING_PKG" 2>/dev/null || {
+        # Fallback: fetch the key directly (armored PGP, not dearmored)
+        log_info "Falling back: fetching grml key directly from deb.grml.org..."
+        mkdir -p /usr/share/keyrings
+        curl -fsSL https://deb.grml.org/repo-key.gpg \
+            -o "$GRML_KEYRING_PGP" || \
+        curl -fsSL https://deb.grml.org/repo.key \
+            | gpg --dearmor > "$GRML_KEYRING_PGP"
+    }
+fi
+
+# Also create a .gpg symlink for older apt versions that look for .gpg
+if [[ -f "$GRML_KEYRING_PGP" && ! -e "${GRML_KEYRING_PGP%.pgp}.gpg" ]]; then
+    ln -sf "$GRML_KEYRING_PGP" "${GRML_KEYRING_PGP%.pgp}.gpg"
 fi
 
 if [[ ! -f "$GRML_APT_LIST" ]]; then
-    log_info "Adding grml apt repository..."
+    log_info "Adding grml apt repository (deb.grml.org)..."
+    # grml-keyring itself may have installed this file; only write if absent.
     cat > "$GRML_APT_LIST" <<EOF
-# grml.org apt repository -- grml-live, grml-debootstrap, grml-keyring
+# grml.org apt repository -- grml-live, grml-debootstrap
 Types: deb
 URIs: https://deb.grml.org/
 Suites: grml-stable
 Components: main
 Architectures: ${ARCH}
-Signed-By: ${GRML_KEYRING}
+Signed-By: ${GRML_KEYRING_PGP}
+Snapshot: disable
 EOF
-    apt-get update -qq
 fi
+apt-get update -qq
 
 log_info "Installing grml-live and grml-debootstrap from apt..."
 apt-get install -y --no-install-recommends \
     grml-live \
-    grml-live-addons \
     grml-debootstrap
 
 log_ok "grml-live and grml-debootstrap installed."
